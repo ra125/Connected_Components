@@ -1,8 +1,13 @@
 Package: concomp
-Title: What the package does (one line)
+Title: Find connected components and boundaries of the components in a logical matrix.
 Version: 0.1
-Authors@R: "First Last <first.last@example.com> [aut, cre]"
+Authors@R: as.person(c(
+    "Dipesh Gautam <dipesh.gautam@duke.edu> [aut, cre]",
+    "Radhika Anand <radhika.anand@duke.edu> [aut]",
+    "Haosheng Luo <haosheng.luo@duke.edu> [aut]"
+
+  ))
 Description: What the package does (one paragraph)
-Depends: R (>= 3.1.2)
-License: What license is it under?
+Depends: R (>= 3.0.2)
+License: None
 LazyData: true
