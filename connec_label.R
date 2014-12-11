@@ -16,12 +16,6 @@ connec_label=function(image, N=4)
   #Initialize the region label. 
   mark=1
   
-  #A vector to determine the neighbors.
-  #offset=c(-1,m,1,-m)
-  
-  #The number of 
-  #nof=0
-  
   #Search by each row and column.
   for(i in 1:m)
   {
@@ -29,7 +23,6 @@ connec_label=function(image, N=4)
     {
       if(image[i,j]==1)
       {
-        #nof=nof+1
         #Position of the first detected element in the region.
         index=(j-1)*m+i
         
