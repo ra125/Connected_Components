@@ -73,23 +73,3 @@ connec_boundaries = function(bw)
   }
   return(BOUNDARY)
 }
-
-
-
-bw = matrix(cbind(rbind(matrix(rep(1,25), ncol = 5), 
-                        matrix(rep(0,80*5), ncol =5),
-                        matrix(rep(1,50), ncol = 5),
-                        matrix(rep(0,25), ncol = 5)),
-                  rbind(matrix(rep(0,50), ncol = 10),
-                        matrix(rep(1,100), ncol = 10),
-                        matrix(rep(0, 85*10), ncol =10)),
-                  rbind(matrix(rep(1,100*70), ncol = 70)
-                  ),
-                  rbind(matrix(rep(1, 5*10), ncol =10),
-                        matrix(rep(0, 80*10), ncol =10),
-                        matrix(rep(1, 100), ncol =10),
-                        matrix(rep(0, 50), ncol =10)
-                  ),
-                  rbind(matrix(rep(0, 5*95), ncol = 5),
-                        matrix(rep(1,25), ncol =5))
-), nrow=100)
