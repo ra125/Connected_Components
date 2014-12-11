@@ -1,5 +1,6 @@
 connec_label=function(image, N=4)
 {
+  #Employ single-pass algorithm
   #Check whether the input is valid.
   #Components are either 4-connected or 8-connected.
   
