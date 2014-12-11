@@ -1,6 +1,8 @@
 connec_label=function(image, N=4)
 {
   #Check whether the input is valid.
+  #Components are either 4-connected or 8-connected.
+  
   stopifnot(is.matrix(image))
   stopifnot(sum(image*(1-image))==0)
   stopifnot(N==4||N==8)
