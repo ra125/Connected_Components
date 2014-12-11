@@ -1,4 +1,4 @@
-Connected_Components
+concomp
 ====================
 
 523 Final Project
