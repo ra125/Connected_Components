@@ -1,8 +1,9 @@
-connec_label=function(image)
+connec_label=function(image, N=4)
 {
   #Check whether the input is valid.
   stopifnot(is.matrix(image))
   stopifnot(sum(image*(1-image))==0)
+  stopifnot(N==4||N==8)
   
   m=nrow(image)
   n=ncol(image)
@@ -42,25 +43,51 @@ connec_label=function(image)
             #If the element is in the bottom of the image, it will only have left, right, and upper neighbors.
             if(index[k]%%m==0 && index[k]!=m*n)
             {
-              offset=c(-1,m,-m)
-            #If the element is in the top of the image, it will only have left, right, and lower neighbors.
-              } else if(index[k]%%m==1 && index[k]!=(n-1)*m+1)
+              if (N==4){
+                offset=c(-1,m,-m)
+              }else{
+                offset=c(-1,m,-m, m-1,-m-1)
+              }
+              #If the element is in the top of the image, it will only have left, right, and lower neighbors.
+            } else if(index[k]%%m==1 && index[k]!=(n-1)*m+1)
             {
-              offset=c(1,m,-m)
-            #If the element is in the very right of the image, it will only have left, upper and lower neighbors.
+              if (N==4){
+                offset = c(1,m,-m)
+              }else{
+                offset = c(1,m,-m, m+1, -m+1)
+              }
+              #If the element is in the very right of the image, it will only have left, upper and lower neighbors.
             } else if(index[k]%/%m==n-1 && index[k]!=(n-1)*m+1 && index[k]!=m*n)
             {
-              offset=c(1,-1,-m)
-            #If the element is in the bottom right corner of the image, it will only have left and upper neighbors.
+              if(N==4){
+                offset=c(1,-1,-m)
+              }else{
+                offset=c(1,-1,-m, -m+1,-m-1)
+              }
+              #If the element is in the bottom right corner of the image, it will only have left and upper neighbors.
             } else if(index[k]==m*n)
             {
-              offset=c(-1,-m)
-            #If the element is in the topright corner of the image, it will only have left and lower neighbors.
+              if(N==4){
+                offset=c(-1,-m)
+              }else{
+                offset= c(-1,-m, -m-1)
+              }
+              #If the element is in the topright corner of the image, it will only have left and lower neighbors.
             } else if(index[k]==(n-1)*m+1)
             {
-              offset=c(1,-m)
-            #Otherwise, the element has all four neighbors.
-            } else {offset=c(-1,m,1,-m)}
+              if(N==4){
+                offset=c(1,-m)
+              }else{
+                offset = c(1,-m,-m+1)
+              }
+              #Otherwise, the element has all four neighbors.
+            } else {
+              if(N==4){
+                offset=c(-1,m,1,-m)
+              }else{
+                offset = c(-1,m,1,-m, m+1, m-1, -m-1, -m+1)
+              }
+            }
             
             neighbors=unlist(c(neighbors,index[k]+offset))
           }
