@@ -1,6 +1,6 @@
-connec_boundaries = function(bw,N=4)
+conBoundaries = function(bw,N=4)
 {
-  source("connec_label.R")
+  source("conLabel.R")
   #Check whether the input is valid.
   #Components are either 4-connected or 8-connected.
   

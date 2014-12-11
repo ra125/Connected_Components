@@ -1,4 +1,4 @@
-connec_label=function(image, N=4)
+conLabel = function(image, N=4)
 {
   #Employ single-pass algorithm
   #Check whether the input is valid.
