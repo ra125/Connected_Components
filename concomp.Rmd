@@ -21,7 +21,7 @@ We have written the following three functions in our package:
 
 ##Methodology
 
-#####1) `conLabel(x,N=4)` Assigns labels to connected components in a logical matrix
+####1) `conLabel(x,N=4)` Assigns labels to connected components in a logical matrix
 
 #####Inputs
 
@@ -55,11 +55,46 @@ We have implemented a single-pass algorithm where we traverse the matrix row wis
 
 6) Deal with edge cases on the fly
 
-#####2) `conBoundaries(x,N=4)` Detects internal and external boundaries of connected components in a logical matrix
+####2) `conBoundaries(x,N=4)` Detects internal and external boundaries of connected components in a logical matrix
+#####Inputs
+
+1) A logical matrix whose connected components are to be labeled
+
+2) An integer to specify 4 or 8 connectivity
+
+#####Output
+
+Matrix with non-zero elements for boundaries of connected components. Each components are separately labeled.
+
+#####Algorithm
+
+Our algorithm detects boundaries by looking at neighboring elements (up, down, right and left). If there's a difference in value between the element and one of it's neighbors, it is determined to be a boundary point. It detects boundaries of components individually by first extracting only the component of interest. When performing row-major and column-major search, to increase the efficiency, we set the limit of the search area to the smallest rectangle that bounds the component we're looking at.
+
+#####Steps
+
+1) Matrix with connected components detected and separately labeled is obtained by passing the arguments to `conLabel`.
+
+2) A matrix is initialized to store the boundaries of all the components.
+
+3) A matrix is initialized to store the boundaries of each component separately.
+
+4) Subset the component we are looking at. Extract the bounding rows and columns of that component.
+
+5) For each component
+* Perform a row-major search for boundary points.
++ + For edge cases (start and end point for the bound), check if they're non-zero. If non-zero mark as boundary and move on.
++ + Starting with the first element, check if the next column is different. If different, mark the non-zero element as boundary and move on.
+
+
++ Perform a column-major search for boundary points.
++  + For edge cases (start and end point for the bound), check if they're non-zero. If non-zero mark as boundary.
++  + Starting with the first element, check if the next row is different. If different, mark the non-zero element as boundary and move on.
+
+* Add the boundaries of current component to the matrix storing boundaries for all components and move on to the next component.
 
 
 
-#####3) `imgMat(x)` Converts a PNG file to a logical matrix
+####3) `imgMat(x)` Converts a PNG file to a logical matrix
 
 #####Input
 
@@ -84,5 +119,77 @@ Here we convert a .png image file to a logical matrix to be further used as an i
 We then build the final R package with these 3 functions using the package `devtools`. 
 
 
+## Some examples
+We ran our functions to check for boundaries for a logical matrix we created with a few components as well as holes in them and also for a sample image. The resulting images for both the examples are shown below.
 
+### Example 1: Sample Matrix
+We tested our functions with a 100x100 matrix defined below.
+```{r}
+library(Matrix)
+library(concomp)
+mat = matrix(rep(0, 100*100), nrow = 100)
+mat[1:5, 1:100] = 1
+mat[1:100, 1:5] = 1
+mat[96:100, 1:100] = 1
+mat[1:100, 96:100] = 1
+mat[11:15, 11:90] = 1
+mat[11:90, 11:15] = 1
+mat[86:90, 11:90] = 1
+mat[11:90, 86:90] = 1
+mat[25:50, 25:50] = 1
+mat[51:75,51:75] = 1
+```
+
+We tested the functions for both 4 and 8-connected connectivity. The results are shown below, we can clearly see that the two square blocks on the center are connected according to 8-connected connectivity but not according to 4-connected.
+
+<p style='text-align: center;'> __Plot showing original matrix__</p>
+  ```{r, fig.align='center'}
+image(Matrix(mat))
+```
+
+
+<p style='text-align: center;'> __Plot showing different 4-connected components as detected by `conLabel()` function__</p>
+  ```{r, echo=FALSE, fig.align='center'}
+A = conLabel(mat)
+image(Matrix(A), col.regions = c(1:max(A)))
+```
+
+<p style='text-align: center;'> __Plot showing different 8-connected components as detected by `conLabel()` function__</p>
+  ```{r, echo=FALSE, fig.align='center'}
+A = conLabel(mat,8)
+image(Matrix(A), col.regions = c(1:max(A)))
+```
+
+<p style='text-align: center;'> __Plot showing boundaries of different 4-connected components as detected by `conLabel()` function__</p>
+  ```{r, echo=FALSE, fig.align='center'}
+A = conBoundaries(mat)
+image(Matrix(A), col.regions = c(1:max(A)))
+```
+
+
+### Example 2: Sample png image
+```{r, fig.align='center', echo=FALSE}
+img = readPNG("git.png")
+mat = imgMat("git.png")
+plot(c(0,1000),c(0,400), axes=F, type ="n", xlab ="", ylab ="", main = "Original Image")
+rasterImage(img, 0,0,1000,400, asp = .4)
+```
+
+<p style='text-align: center;'> __Matrix representation after changing the image into logical matrix using `imgMat()` function__</p>
+  ```{r, fig.align='center', echo=FALSE}
+mat = imgMat("git.png")
+Matrix::image(Matrix(mat), col.regions = c(1:max(mat)))
+```
+
+<p style='text-align: center;'> __Plot showing different components as detected by `conLabel()` function__</p>
+  ```{r, fig.align='center', echo=FALSE}
+lab = conLabel(mat)
+Matrix::image(Matrix(lab), col.regions = c(1:max(lab)))
+```
+
+<p style='text-align: center;'> __Plot showing boundaries of different components as detected by `conBoundaries()` function__</p>
+  ```{r, fig.align='center', echo=FALSE}
+labBound = conBoundaries(mat)
+Matrix::image(Matrix(labBound), col.regions = c(1:max(labBound)))
+```
 
