@@ -21,7 +21,7 @@ mat = imgMat("download.png")
 plot(c(0,103),c(0,100), axes=F, type ="n", xlab ="", ylab ="", main = "Original Image")
 rasterImage(img, 0,0,103,100)
 
-mat = imgMat("download.png")
+mat = imgMat("git.png")
 Matrix::image(Matrix(mat), col.regions = c(1:max(mat)))
 
 lab = conLabel(mat)
