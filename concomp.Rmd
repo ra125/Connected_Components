@@ -1,23 +1,75 @@
 ---
-title: "STA523 Final Project"
+title: "STA 523 Final Project"
 author: "Dipesh Gautam, Radhika Anand, Haosheng Luo, Siyang Li"
 date: "12/12/2014"
 output: html_document
 ---
 
+For this project, we have built a package called `concomp` to detect connected components and holes and their boundaries in an image or a logical matrix.
 
-```{r}
+##Motivation
+While working on 523 Homework-3, where we had to detect Manhattan precinct boundaries, we had data points in all of Manhattan apart from the Central Park area. While trying to detect the Central Park, we were looking for functions to detect holes and boundaries and hence decided to create a package with functions for the same.
 
-```
+##Functions
+We have written the following three functions in our package:
 
+1) `conLabel()` Assigns labels to connected components in a logical matrix
+
+2) `conBoundaries()` Detects internal and external boundaries of connected components in a logical matrix
+
+3) `imgMat()` Converts a PNG file to a logical matrix
+
+##Methodology
+
+#####1) `conLabel(x,N=4)` Assigns labels to connected components in a logical matrix
+
+#####Inputs
+
+1) A logical matrix whose connected components are to be labeled
+
+2) An integer to specify 4 or 8 connectivity
+
+#####Output
+
+Matrix with connected components detected and separately labeled
+
+#####Algorithm
+
+We have implemented a single-pass algorithm where we traverse the matrix row wise and label the connected components using 4 or 8-connectivity as specified by the user. In 4-connectivity, we look at the top, left, right and bottom neighbor of each cell to check whether they belong to the same component and in 8-connectivity we check all 8 neighbors.
+
+#####Steps
+
+1) A connected-component matrix is initialized to size of the input matrix
+
+2) A mark is initialized and incremented for every detected object in the image.
+
+3) A row-major scan is started for the entire image.
+
+4) If an object pixel is detected, then following steps are repeated while (Index !=0) 
++ Set the corresponding pixel to 0 in Image. 
++ A vector (Index) is updated with all the neighboring pixels of the currently set pixels. 
++ Unique pixels are retained and repeated pixels are removed. 
++ Set the pixels indicated by Index to mark in the connected-component matrix.
+
+5) Increment the marker for another object in the image.
+
+2) `conBoundaries(x,N=4)` Detects internal and external boundaries of connected components in a logical matrix
+
+
+
+3) `imgMat(x)` Converts a PNG file to a logical matrix
+
+
+
+We then built the R package using the package `devtools`. 
 
 ### Some examples
-```{r}
+#```{r}
 library(png)
 library(Matrix)
 library(concomp)
-img = readPNG("download.png")
-mat = imgMat("download.png")
+img = readPNG("git.png")
+mat = imgMat("git.png")
 plot(c(0,103),c(0,100), axes=F, type ="n", xlab ="", ylab ="", main = "Original Image")
 rasterImage(img, 0,0,103,100)
 
@@ -31,5 +83,5 @@ labBound = conBoundaries(mat)
 Matrix::image(Matrix(labBound), col.regions = c(1:max(labBound)))
 
 
-```
+#```
 

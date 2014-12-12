@@ -1,15 +1,15 @@
-conLabel = function(image, N=4)
+conLabel = function(mat, N=4)
 {
   #Employ single-pass algorithm
   #Check whether the input is valid.
   #Components are either 4-connected or 8-connected.
   
-  stopifnot(is.matrix(image))
-  stopifnot(sum(image*(1-image))==0)
+  stopifnot(is.matrix(mat))
+  stopifnot(sum(mat*(1-mat))==0)
   stopifnot(N==4||N==8)
   
-  m=nrow(image)
-  n=ncol(image)
+  m=nrow(mat)
+  n=ncol(mat)
   
   #Set up a zeros matrix for saving labels later.
   connec=matrix(rep(0,m*n),nrow=m,ncol=n)
@@ -22,7 +22,7 @@ conLabel = function(image, N=4)
   {
     for(j in 1:n)
     {
-      if(image[i,j]==1)
+      if(mat[i,j]==1)
       {
         #Position of the first detected element in the region.
         index=(j-1)*m+i
@@ -32,11 +32,11 @@ conLabel = function(image, N=4)
         while(length(index)!=0)
         {
           #Set visited element equal to zero, that we will not visit again.
-          image[index]=0
+          mat[index]=0
           neighbors=list()
           for(k in 1:length(index))
           {
-            #If the element is in the bottom of the image, it will only have left, right, and upper neighbors.
+            #If the element is in the bottom of the mat, it will only have left, right, and upper neighbors.
             if(index[k]%%m==0 && index[k]!=m*n)
             {
               if (N==4){
@@ -44,7 +44,7 @@ conLabel = function(image, N=4)
               }else{
                 offset=c(-1,m,-m, m-1,-m-1)
               }
-              #If the element is in the top of the image, it will only have left, right, and lower neighbors.
+              #If the element is in the top of the mat, it will only have left, right, and lower neighbors.
             } else if(index[k]%%m==1 && index[k]!=(n-1)*m+1)
             {
               if (N==4){
@@ -52,7 +52,7 @@ conLabel = function(image, N=4)
               }else{
                 offset = c(1,m,-m, m+1, -m+1)
               }
-              #If the element is in the very right of the image, it will only have left, upper and lower neighbors.
+              #If the element is in the very right of the mat, it will only have left, upper and lower neighbors.
             } else if(index[k]%/%m==n-1 && index[k]!=(n-1)*m+1 && index[k]!=m*n)
             {
               if(N==4){
@@ -60,7 +60,7 @@ conLabel = function(image, N=4)
               }else{
                 offset=c(1,-1,-m, -m+1,-m-1)
               }
-              #If the element is in the bottom right corner of the image, it will only have left and upper neighbors.
+              #If the element is in the bottom right corner of the mat, it will only have left and upper neighbors.
             } else if(index[k]==m*n)
             {
               if(N==4){
@@ -68,7 +68,7 @@ conLabel = function(image, N=4)
               }else{
                 offset= c(-1,-m, -m-1)
               }
-              #If the element is in the topright corner of the image, it will only have left and lower neighbors.
+              #If the element is in the topright corner of the mat, it will only have left and lower neighbors.
             } else if(index[k]==(n-1)*m+1)
             {
               if(N==4){
@@ -93,7 +93,7 @@ conLabel = function(image, N=4)
           neighbors=neighbors[neighbors>0]
           
           #Extract the position of all the neighbor elements that are in the region and label the element. 
-          index=neighbors[which(image[neighbors]==1)]
+          index=neighbors[which(mat[neighbors]==1)]
           connec[index]=mark
         }
         
