@@ -1,0 +1,35 @@
+---
+title: "STA523 Final Project"
+author: "Dipesh Gautam, Radhika Anand, Haosheng Luo, Siyang Li"
+date: "12/12/2014"
+output: html_document
+---
+
+
+```{r}
+
+```
+
+
+### Some examples
+```{r}
+library(png)
+library(Matrix)
+library(concomp)
+img = readPNG("download.png")
+mat = imgMat("download.png")
+plot(c(0,103),c(0,100), axes=F, type ="n", xlab ="", ylab ="", main = "Original Image")
+rasterImage(img, 0,0,103,100)
+
+mat = imgMat("download.png")
+Matrix::image(Matrix(mat), col.regions = c(1:max(mat)))
+
+lab = conLabel(mat)
+Matrix::image(Matrix(lab), col.regions = c(1:max(lab)))
+
+labBound = conBoundaries(mat)
+Matrix::image(Matrix(labBound), col.regions = c(1:max(labBound)))
+
+
+```
+
