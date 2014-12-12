@@ -35,119 +35,54 @@ Matrix with connected components detected and separately labeled
 
 #####Algorithm
 
-We have implemented a single-pass algorithm where we traverse the matrix row wise and label the connected components using 4 or 8-connectivity as specified by the user. In 4-connectivity, we look at the top, left, right and bottom neighbor of each cell to check whether they belong to the same component and in 8-connectivity we check all 8 neighbors.
+We have implemented a single-pass algorithm where we traverse the matrix row wise and label the connected components using 4 or 8-connectivity as specified by the user. In 4-connectivity, we look at the top, left, right and bottom neighbor of each cell and in 8-connectivity we check all 8 neighbors.
 
 #####Steps
 
 1) A connected-component matrix is initialized to size of the input matrix
 
-2) A mark is initialized and incremented for every detected object in the image.
+2) A `mark` is initialized and incremented for every detected component in the matrix
 
-3) A row-major scan is started for the entire image.
+3) A row-major scan is started for the entire matrix
 
-4) If an object pixel is detected, then following steps are repeated while (Index !=0) 
-+ Set the corresponding pixel to 0 in Image. 
-+ A vector (Index) is updated with all the neighboring pixels of the currently set pixels. 
-+ Unique pixels are retained and repeated pixels are removed. 
-+ Set the pixels indicated by Index to mark in the connected-component matrix.
+4) If a component cell is detected, the following steps are repeated while (`index` !=0) 
++ Set the corresponding cell to 0 in the matrix
++ A vector `index` is updated with all the neighboring cells (4 or 8) of the currently set cells 
++ Only the unique cells are retained 
++ Set the cells indicated by `index` to `mark` in the connected-component matrix
 
-5) Increment the marker for another object in the image.
+5) Increment the marker for another component
 
-2) `conBoundaries(x,N=4)` Detects internal and external boundaries of connected components in a logical matrix
+6) Deal with edge cases on the fly
 
-
-
-3) `imgMat(x)` Converts a PNG file to a logical matrix
+#####2) `conBoundaries(x,N=4)` Detects internal and external boundaries of connected components in a logical matrix
 
 
 
-We then built the R package using the package `devtools`. 
+#####3) `imgMat(x)` Converts a PNG file to a logical matrix
+
+#####Input
+
+Image or image path
+
+#####Output
+
+A logical matrix indicating white or black pixels of the image
+
+#####Algorithm
+
+Here we convert a .png image file to a logical matrix to be further used as an input to conLabel and conBoundaries. 0 indicates white (and slightly offwhite) pixels and 1 indicates colored pixels of a high-contrast image.
+
+#####Steps
+
+1) Read the image using command `readPNG` from package `png`
+
+2) Sum up the layers of the 3-D matrix obtained and normalize the data to be between 0 and 1 such that 0 indicates white and black indicates 1
+
+3) Set all values greater then 0.1 to 1 and less than or equal to 0.1 to 0
+
+We then build the final R package with these 3 functions using the package `devtools`. 
 
 
----
-title: "STA523 Final Project"
-author: "Dipesh Gautam, Radhika Anand, Haosheng Luo, Siyang Li"
-date: "12/12/2014"
-output: html_document
----
 
-
-```{r}
-library(Matrix)
-library(concomp)
-
-```
-
-
-## Some examples
-We ran our functions to check for boundaries for a logical matrix we created with a few components as well as holes in them and also for a sample image. The resulting images for both the examples are shown below.
-
-### Example 1: Sample Matrix
-We tested our functions with a 100x100 matrix defined below.
-```{r}
-mat = matrix(rep(0, 100*100), nrow = 100)
-mat[1:5, 1:100] = 1
-mat[1:100, 1:5] = 1
-mat[96:100, 1:100] = 1
-mat[1:100, 96:100] = 1
-mat[11:15, 11:90] = 1
-mat[11:90, 11:15] = 1
-mat[86:90, 11:90] = 1
-mat[11:90, 86:90] = 1
-mat[25:50, 25:50] = 1
-mat[51:75,51:75] = 1
-```
-
-We tested the functions for both 4 and 8-connected connectivity. The results are shown below, we can clearly see that the two square blocks on the center are connected according to 8-connected connectivity but not according to 4-connected.
-
-<p style='text-align: center;'> __Plot showing original matrix__</p>
-```{r, fig.align='center'}
-image(Matrix(mat))
-```
-
-
-<p style='text-align: center;'> __Plot showing different 4-connected components as detected by `conLabel()` function__</p>
-```{r, echo=FALSE, fig.align='center'}
-A = conLabel(mat)
-image(Matrix(A), col.regions = c(1:max(A)))
-```
-
-<p style='text-align: center;'> __Plot showing different 8-connected components as detected by `conLabel()` function__</p>
-```{r, echo=FALSE, fig.align='center'}
-A = conLabel(mat,8)
-image(Matrix(A), col.regions = c(1:max(A)))
-```
-
-<p style='text-align: center;'> __Plot showing boundaries of different 4-connected components as detected by `conLabel()` function__</p>
-```{r, echo=FALSE, fig.align='center'}
-A = conBoundaries(mat)
-image(Matrix(A), col.regions = c(1:max(A)))
-```
-
-
-### Example 2: Sample png image
-```{r, fig.align='center', echo=FALSE}
-img = readPNG("git.png")
-mat = imgMat("git.png")
-plot(c(0,1000),c(0,400), axes=F, type ="n", xlab ="", ylab ="", main = "Original Image")
-rasterImage(img, 0,0,1000,400, asp = .4)
-```
-
-<p style='text-align: center;'> __Matrix representation after changing the image into logical matrix using `imgMat()` function__</p>
-```{r, fig.align='center', echo=FALSE}
-mat = imgMat("git.png")
-Matrix::image(Matrix(mat), col.regions = c(1:max(mat)))
-```
-
-<p style='text-align: center;'> __Plot showing different components as detected by `conLabel()` function__</p>
-```{r, fig.align='center', echo=FALSE}
-lab = conLabel(mat)
-Matrix::image(Matrix(lab), col.regions = c(1:max(lab)))
-```
-
-<p style='text-align: center;'> __Plot showing boundaries of different components as detected by `conBoundaries()` function__</p>
-```{r, fig.align='center', echo=FALSE}
-labBound = conBoundaries(mat)
-Matrix::image(Matrix(labBound), col.regions = c(1:max(labBound)))
-```
 
