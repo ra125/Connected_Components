@@ -1,6 +1,6 @@
 conBoundaries = function(bw,N=4)
 {
-  source("conLabel.R")
+#   source("conLabel.R")
   #Check whether the input is valid.
   #Components are either 4-connected or 8-connected.
   
@@ -9,7 +9,7 @@ conBoundaries = function(bw,N=4)
   stopifnot(N==4||N==8)
   
   #Label the regions in the image.
-  L = connec_label(bw,N)
+  L = conLabel(bw,N)
   num_labels = max(L)
   
   #Set up a zeros matrix for saving boundaries of the whole image later.
