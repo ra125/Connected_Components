@@ -6,6 +6,9 @@ Authors@R: as.person(c(
     "Radhika Anand <radhika.anand@duke.edu> [aut]",
     "Haosheng Luo <haosheng.luo@duke.edu> [aut]"))
 Description: What the package does (one paragraph)
-Depends: R (>= 3.0.2)
+Depends:
+    R (>= 3.0.2),
+    png,
+    Matrix
 License: None
 LazyData: true
