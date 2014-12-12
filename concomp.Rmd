@@ -5,6 +5,8 @@ date: "12/12/2014"
 output: html_document
 ---
 
+All codes can be found at `https://github.com/ra125/concomp`.
+
 For this project, we have built a package called `concomp` to detect connected components and holes and their boundaries in an image or a logical matrix.
 
 ##Motivation
@@ -58,13 +60,13 @@ We have implemented a single-pass algorithm where we traverse the matrix row wis
 ####2) `conBoundaries(x,N=4)` Detects internal and external boundaries of connected components in a logical matrix
 #####Inputs
 
-1) A logical matrix whose connected components are to be labeled
+1) A logical matrix in which boundaries are to be detected
 
 2) An integer to specify 4 or 8 connectivity
 
 #####Output
 
-Matrix with non-zero elements for boundaries of connected components. Each components are separately labeled.
+Matrix with non-zero elements for boundaries of connected components. Boundary of each component is separately labeled.
 
 #####Algorithm
 
@@ -93,7 +95,6 @@ Our algorithm detects boundaries by looking at neighboring elements (up, down, r
 * Add the boundaries of current component to the matrix storing boundaries for all components and move on to the next component.
 
 
-
 ####3) `imgMat(x)` Converts a PNG file to a logical matrix
 
 #####Input
@@ -116,17 +117,240 @@ Here we convert a .png image file to a logical matrix to be further used as an i
 
 3) Set all values greater then 0.1 to 1 and less than or equal to 0.1 to 0
 
-We then build the final R package with these 3 functions using the package `devtools`. 
+##Package Creation
+Another motivation for this project was to have hands-on experience with package creation in R. Since, this was our first attemt at creating a package we only went through the minimum requirements of a package:
 
+ * `R/` folder containing the R files
+ + `man/` folder containing function documentation
+ + `DESCRIPTION` file with package metadata
+
+We used package `devtools` to build and install the package. Since our package uses a function from `png` package, and R's builtin `install.packages` function was not correctly installing the dependent packages, we used `install` function from `devtools` package to test the installation and validity of the package. We see that the package works as expected.
 
 ## Some examples
 We ran our functions to check for boundaries for a logical matrix we created with a few components as well as holes in them and also for a sample image. The resulting images for both the examples are shown below.
 
+To display the results of our functions while avoiding errors that might arise while installing the function due to dependence on the `png` package, we have copied the definitions for all functions and also sourced the packages required for testing, here. But if we install our package `concomp` correctly using `devtools::install("concomp")`, then all functions work directly from there. 
+
+```{r,echo=FALSE}
+check_packages = function(names)
+{
+  for(name in names)
+  {
+    if (!(name %in% installed.packages()))
+      install.packages(name, repos="http://cran.us.r-project.org")
+    
+    library(name, character.only=TRUE, quietly=TRUE, warn.conflicts=FALSE, 
+            verbose=FALSE)
+  }
+}
+conLabel = function(mat, N=4)
+{
+  #Employ single-pass algorithm
+  #Check whether the input is valid.
+  #Components are either 4-connected or 8-connected.
+  
+  stopifnot(is.matrix(mat))
+  stopifnot(sum(mat*(1-mat))==0)
+  stopifnot(N==4||N==8)
+  
+  m=nrow(mat)
+  n=ncol(mat)
+  
+  #Set up a zeros matrix for saving labels later.
+  connec=matrix(rep(0,m*n),nrow=m,ncol=n)
+  
+  #Initialize the region label. 
+  mark=1
+  
+  #Search by each row and column.
+  for(i in 1:m)
+  {
+    for(j in 1:n)
+    {
+      if(mat[i,j]==1)
+      {
+        #Position of the first detected element in the region.
+        index=(j-1)*m+i
+        
+        #Label the first element.
+        connec[index]=mark
+        while(length(index)!=0)
+        {
+          #Set visited element equal to zero, that we will not visit again.
+          mat[index]=0
+          neighbors=list()
+          for(k in 1:length(index))
+          {
+            #If the element is in the bottom of the mat, it will only have left, right, and upper neighbors.
+            if(index[k]%%m==0 && index[k]!=m*n)
+            {
+              if (N==4){
+                offset=c(-1,m,-m)
+              }else{
+                offset=c(-1,m,-m, m-1,-m-1)
+              }
+              #If the element is in the top of the mat, it will only have left, right, and lower neighbors.
+            } else if(index[k]%%m==1 && index[k]!=(n-1)*m+1)
+            {
+              if (N==4){
+                offset = c(1,m,-m)
+              }else{
+                offset = c(1,m,-m, m+1, -m+1)
+              }
+              #If the element is in the very right of the mat, it will only have left, upper and lower neighbors.
+            } else if(index[k]%/%m==n-1 && index[k]!=(n-1)*m+1 && index[k]!=m*n)
+            {
+              if(N==4){
+                offset=c(1,-1,-m)
+              }else{
+                offset=c(1,-1,-m, -m+1,-m-1)
+              }
+              #If the element is in the bottom right corner of the mat, it will only have left and upper neighbors.
+            } else if(index[k]==m*n)
+            {
+              if(N==4){
+                offset=c(-1,-m)
+              }else{
+                offset= c(-1,-m, -m-1)
+              }
+              #If the element is in the topright corner of the mat, it will only have left and lower neighbors.
+            } else if(index[k]==(n-1)*m+1)
+            {
+              if(N==4){
+                offset=c(1,-m)
+              }else{
+                offset = c(1,-m,-m+1)
+              }
+              #Otherwise, the element has all four neighbors.
+            } else {
+              if(N==4){
+                offset=c(-1,m,1,-m)
+              }else{
+                offset = c(-1,m,1,-m, m+1, m-1, -m-1, -m+1)
+              }
+            }
+            
+            neighbors=unlist(c(neighbors,index[k]+offset))
+          }
+          neighbors=unique(neighbors)
+          
+          #Get rid of all the neighbors that are out of the boundaries.
+          neighbors=neighbors[neighbors>0]
+          
+          #Extract the position of all the neighbor elements that are in the region and label the element. 
+          index=neighbors[which(mat[neighbors]==1)]
+          connec[index]=mark
+        }
+        
+        #Update the label before moving to the next region.
+        mark=mark+1
+      }
+    }
+  }
+  
+  return(connec)
+  
+}
+
+conBoundaries = function(bw,N=4)
+{
+  #Check whether the input is valid.
+  #Components are either 4-connected or 8-connected.
+  
+  stopifnot(is.matrix(bw))
+  stopifnot(sum(bw*(1-bw))==0)
+  stopifnot(N==4||N==8)
+  
+  #Label the regions in the image.
+  L = conLabel(bw,N)
+  num_labels = max(L)
+  
+  #Set up a zeros matrix for saving boundaries of the whole image later.
+  BOUNDARY = L
+  BOUNDARY[,]=0
+  
+  #Find boundaries for each region.
+  for (n in 1:num_labels){
+    segment = L
+    #Set up a zeros matrix for saving boundaries of an individual region.
+    boundary = L
+    boundary[,]=0
+    #Subset the region we are looking at. Extract the maxmimum and minimum rows and columns of that region.
+    segment[which(!segment==n)]=0
+    all.points = which(segment==n, arr.ind=T)
+    row.limit = c(min(all.points[,1]), max(all.points[,1]))
+    col.limit = c(min(all.points[,2]), max(all.points[,2]))
+    
+    #For each row, search the positions where the elements change from zero to the label or vice versa.
+    for (i in row.limit[1]:row.limit[2]){
+      for(j in col.limit[1]:col.limit[2]){
+        #When we are in the first column of the image, and if the element is in the region, this is the boundary point. 
+        if(j==1 && segment[i,j]==n){
+          boundary[i,j] = n
+        } else if(j==1 && segment[i,j]!=n){
+          boundary[i,j] = 0
+        #When we are in the last column of the image, and if the element is in the region, this is the boundary point.
+        } else if(j==ncol(segment)&&segment[i,j]==n){
+          boundary[i,j] = n
+        } else if(j==ncol(segment)&&segment[i,j]!=n){
+          boundary[i,j] = 0    
+        #When the value of two adjacent elements are different, the bigger one is the boundary point (the background is labeled with zero).
+        } else if(segment[i,j]>segment[i,j-1]){
+          boundary[i,j] = n
+        } else if (segment[i,j]>segment[i,j+1]){
+          boundary[i,j] = n
+        }
+      }
+      
+    }
+    #For each column, search the positions where the elements change from zero to the label or vice versa.
+    for (j in col.limit[1]:col.limit[2]){
+      for(i in row.limit[1]:row.limit[2]){
+        #When we are in the first row of the image, and if the element is in the region, this is the boundary point. 
+        if(i==1 && segment[i,j]==n){
+          boundary[i,j] = n
+        } else if(i==1 && segment[i,j]!=n){
+          boundary[i,j] = 0
+        #When we are in the last row of the image, and if the element is in the region, this is the boundary point.
+        } else if(i==nrow(segment) && segment[i,j]==n){
+          boundary[i,j] = n
+        } else if(i==nrow(segment) && segment[i,j]!=n){
+          boundary[i,j] = 0
+        #When the value of two adjacent elements are different, the bigger one is the boundary point (the background is labeled with zero).
+        } else if(segment[i,j]>segment[i-1,j]){
+          boundary[i,j] = n
+        } else if (segment[i,j]>segment[i+1,j]){
+          boundary[i,j] = n
+        }
+      } 
+    }   
+    #Add all the individual region boundaries.
+    BOUNDARY = BOUNDARY+boundary
+  }
+  return(BOUNDARY)
+}
+
+imgMat = function(png)
+{
+  #Read the PNG file
+  img = readPNG(png)
+  
+  #Sum up all the layers and normalize the image data
+  scl_img=img[,,1]+img[,,2]+img[,,3]
+  scl_img=scl_img/max(scl_img)
+  
+  #Set white pixels equal to 0 and black to 1
+  scl_img=1-scl_img
+  scl_img[which(scl_img>0.1)]=1
+  scl_img[which(scl_img<=0.1)]=0
+  return(scl_img)
+}
+```
 ### Example 1: Sample Matrix
+
 We tested our functions with a 100x100 matrix defined below.
 ```{r}
-library(Matrix)
-library(concomp)
+suppressMessages(check_packages(c('Matrix', 'png', 'graphics')))
 mat = matrix(rep(0, 100*100), nrow = 100)
 mat[1:5, 1:100] = 1
 mat[1:100, 1:5] = 1
@@ -143,7 +367,7 @@ mat[51:75,51:75] = 1
 We tested the functions for both 4 and 8-connected connectivity. The results are shown below, we can clearly see that the two square blocks on the center are connected according to 8-connected connectivity but not according to 4-connected.
 
 <p style='text-align: center;'> __Plot showing original matrix__</p>
-  ```{r, fig.align='center'}
+  ```{r, fig.align='center',echo=FALSE}
 image(Matrix(mat))
 ```
 
@@ -169,8 +393,8 @@ image(Matrix(A), col.regions = c(1:max(A)))
 
 ### Example 2: Sample png image
 ```{r, fig.align='center', echo=FALSE}
-img = readPNG("git.png")
-mat = imgMat("git.png")
+img = readPNG("~dg156/finalData/git.png")
+mat = imgMat("~dg156/finalData/git.png")
 plot(c(0,1000),c(0,400), axes=F, type ="n", xlab ="", ylab ="", main = "Original Image")
 rasterImage(img, 0,0,1000,400, asp = .4)
 ```
