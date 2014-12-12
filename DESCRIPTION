@@ -9,4 +9,3 @@ Description: What the package does (one paragraph)
 Depends: R (>= 3.0.2)
 License: None
 LazyData: true
-Imports: png, Matrix
