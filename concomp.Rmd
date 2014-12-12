@@ -401,7 +401,7 @@ rasterImage(img, 0,0,1000,400, asp = .4)
 
 <p style='text-align: center;'> __Matrix representation after changing the image into logical matrix using `imgMat()` function__</p>
   ```{r, fig.align='center', echo=FALSE}
-mat = imgMat("git.png")
+mat = imgMat("~dg156/finalData/git.png")
 Matrix::image(Matrix(mat), col.regions = c(1:max(mat)))
 ```
 
